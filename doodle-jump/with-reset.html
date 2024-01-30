@@ -38,7 +38,7 @@ const DOODLE_COLOR = "#478978"
 // player physics
 const GRAVITY = 0.33;
 const DRAG = 0.3;
-const BOUNCE_VELOCITY = -12.5;
+const BOUNCE_VELOCITY = -13;
 
 // minimum and maximum vertical space between each platform
 let MIN_PLATFORM_SPACE = 100;
@@ -156,11 +156,6 @@ function loop() {
     doodle.x = -doodle.width;
   }
 
-  if (doodle.y > CANVAS.height) {
-     cancelAnimationFrame(ANIMATION_FRAME)
-     DOODLE_IS_OFF_SCREEN = true
-  }
-
   // draw platforms
   CONTEXT.fillStyle = PLATFORM_COLOR;
   platforms.forEach(function(platform) {
@@ -197,6 +192,12 @@ function loop() {
   platforms = platforms.filter(function(platform) {
     return platform.y < CANVAS.height;
   })
+
+    if (doodle.y > CANVAS.height) {
+        cancelAnimationFrame(ANIMATION_FRAME)
+        DOODLE_IS_OFF_SCREEN = true
+        showResetScreen()
+    }
 }
 
 let DOODLE_IS_OFF_SCREEN = false;
@@ -208,6 +209,15 @@ function reset() {
        startGame()
        DOODLE_IS_OFF_SCREEN = false
     }
+}
+
+function showResetScreen() {
+    CONTEXT.textAlign = 'center';
+    CONTEXT.font = '48px Arial';
+    var centerX = CANVAS.width / 2;
+    CONTEXT.fillText("Whoops", centerX, 50);
+    CONTEXT.font = "24px Arial";
+    CONTEXT.fillText("Press <spacebar> to restart", centerX, 100);
 }
 
 // listen to keyboard events to move doodle
@@ -227,7 +237,6 @@ document.addEventListener('keydown', function(e) {
   }
 
   else if (e.which === 32) {
-    console.log('hello friends')
     if ( DOODLE_IS_OFF_SCREEN ) {
         reset()
     }
@@ -248,5 +257,6 @@ function startGame() {
     fillPlatformsArray()
     requestAnimationFrame(loop)
 }
+
 startGame()
 </script>

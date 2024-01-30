@@ -26,7 +26,6 @@
 <canvas width="500" height="667" id="game"></canvas>
 <script>
 const CANVAS = document.getElementById('game');
-console.log(CANVAS.height)
 const CONTEXT = CANVAS.getContext('2d');
 
 // width and height of each platform and where platforms start
@@ -42,44 +41,47 @@ const DRAG = 0.3;
 const BOUNCE_VELOCITY = -12.5;
 
 // minimum and maximum vertical space between each platform
-let MIN_PLATFORM_SPACE = 10;
+let MIN_PLATFORM_SPACE = 100;
 let MAX_PLATFORM_SPACE = 150;
 const CANVAS_EDGE_BUFFER = 25;
+const START_PLATFORM = {
+      x: CANVAS.width / 2 - PLATFORM_WIDTH / 2,
+      y: PLATFORM_START,
+}
 
-// information about each platform. the first platform starts in the
-// bottom middle of the screen
-let platforms = [{
-  x: CANVAS.width / 2 - PLATFORM_WIDTH / 2,
-  y: PLATFORM_START
-}];
+let platforms = [START_PLATFORM];
 
 // get a random number between the min (inclusive) and max (exclusive)
 function randomNumBetweenMinAndMax(min, max) {
   return Math.random() * (max - min) + min;
 }
 
-// fill the initial screen with platforms
-let y = PLATFORM_START;
-while (y > 0) {
-  // the next platform can be placed above the previous one with a space
-  // somewhere between the min and max space
-  y -= PLATFORM_HEIGHT + randomNumBetweenMinAndMax(MIN_PLATFORM_SPACE, MAX_PLATFORM_SPACE);
+function fillPlatformsArray() {
+    let y = PLATFORM_START;
+    while (y > 0) {
+        y -= PLATFORM_HEIGHT + randomNumBetweenMinAndMax(MIN_PLATFORM_SPACE, MAX_PLATFORM_SPACE);
 
-  let x = randomNumBetweenMinAndMax(CANVAS_EDGE_BUFFER, CANVAS.width - CANVAS_EDGE_BUFFER - PLATFORM_WIDTH);
-  platforms.push({ x, y });
+        let x = randomNumBetweenMinAndMax(CANVAS_EDGE_BUFFER, CANVAS.width - CANVAS_EDGE_BUFFER - PLATFORM_WIDTH);
+        platforms.push({ x, y });
+    }
 }
 
-// the doodle jumper
-const doodle = {
-  width: 40,
-  height: 60,
-  x: CANVAS.width / 2 - 20,
-  y: PLATFORM_START - 60,
-
-  // velocity
-  dx: 0,
-  dy: 0
+let doodle = {
+    y: PLATFORM_START - 60,
 };
+
+function setDoodleJumperToDefaults() {
+    doodle = {
+        width: 40,
+        height: 60,
+        x: CANVAS.width / 2 - 20,
+        y: PLATFORM_START - 100,
+
+        // velocity
+        dx: 0,
+        dy: 0
+    };
+}
 
 // keep track of player direction and actions
 let playerDir = 0;
@@ -87,11 +89,13 @@ let keydown = false;
 let prevDoodleY = doodle.y;
 let ANIMATION_FRAME;
 
-// game loop
+function clearScreen() {
+    CONTEXT.clearRect(0,0,CANVAS.width,CANVAS.height);
+}
+
 function loop() {
   ANIMATION_FRAME = requestAnimationFrame(loop);
-  CONTEXT.clearRect(0,0,CANVAS.width,CANVAS.height);
-
+  clearScreen()
   // apply gravity to doodle
   doodle.dy += GRAVITY;
 
@@ -153,7 +157,6 @@ function loop() {
   }
 
   if (doodle.y > CANVAS.height) {
-      console.log(doodle.y)
      cancelAnimationFrame(ANIMATION_FRAME)
      DOODLE_IS_OFF_SCREEN = true
   }
@@ -199,8 +202,12 @@ function loop() {
 let DOODLE_IS_OFF_SCREEN = false;
 
 function reset() {
-    console.log(DOODLE_IS_OFF_SCREEN)
-    console.log('hey we are resetting')
+    if (DOODLE_IS_OFF_SCREEN) {
+       clearScreen()
+       resetPlatformsArray()
+       startGame()
+       DOODLE_IS_OFF_SCREEN = false
+    }
 }
 
 // listen to keyboard events to move doodle
@@ -231,8 +238,15 @@ document.addEventListener('keyup', function(e) {
   keydown = false;
 });
 
-// start the game
-requestAnimationFrame(loop);
+function resetPlatformsArray() {
+    START_PLATFORM.y = PLATFORM_START;
+    platforms = [START_PLATFORM];
+}
+
+function startGame() {
+    setDoodleJumperToDefaults()
+    fillPlatformsArray()
+    requestAnimationFrame(loop)
+}
+startGame()
 </script>
-</body>
-</html>

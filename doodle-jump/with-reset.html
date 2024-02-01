@@ -210,7 +210,7 @@
                 )),
           });
 
-            increaseDifficulty()
+          increaseDifficulty();
         }
       }
 
@@ -277,9 +277,6 @@
             doodleWasAbovePlatform(platform) &&
             doodleCollidedWithPlatform(platform)
           ) {
-            console.log("doodle:", doodle.y);
-            console.log("platform:", platform.y);
-            console.log("doodle height:", doodle.height);
             doodle.y = platform.y - doodle.height;
             doodle.dy = BOUNCE_VELOCITY;
           }
@@ -318,6 +315,10 @@
       }
 
       document.addEventListener("keydown", function (e) {
+        // 'p' key
+        if (e.which === 80) {
+          cancelAnimationFrame(ANIMATION_FRAME);
+        }
         // left arrow key
         if (e.which === 37) {
           keydown = true;

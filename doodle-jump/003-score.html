@@ -1,0 +1,390 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Doodle Jump</title>
+    <meta charset="UTF-8" />
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        background-color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      canvas {
+        background-color: #242038;
+        border: 2px solid #d6edff;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas width="500" height="667" id="game"></canvas>
+    <script>
+      const CANVAS = document.getElementById("game");
+      const CONTEXT = CANVAS.getContext("2d");
+
+      const PLATFORM_WIDTH = 65;
+      const PLATFORM_HEIGHT = 20;
+      const PLATFORM_START = CANVAS.height - 50;
+      let GAME_SCORE = 0;
+
+      const PLATFORM_COLOR = "#9067c6";
+      const DOODLE_COLOR = "#478978";
+
+      const GRAVITY = 0.33;
+      const DRAG = 0.3;
+      const BOUNCE_VELOCITY = -13;
+
+      const START_MIN_PLATFORM_SPACE = 10;
+      let MIN_PLATFORM_SPACE = START_MIN_PLATFORM_SPACE;
+      const START_MAX_PLATFORM_SPACE = 100;
+      let MAX_PLATFORM_SPACE = START_MAX_PLATFORM_SPACE;
+      const CANVAS_EDGE_BUFFER = 25;
+      const START_PLATFORM = {
+        x: CANVAS.width / 2 - PLATFORM_WIDTH / 2,
+        y: PLATFORM_START,
+      };
+      let REACHED_PLATFORM = START_PLATFORM;
+      let PREVIOUS_REACHED_PLATFORM = REACHED_PLATFORM;
+
+      let platforms = [START_PLATFORM];
+
+      // get a random number between the min (inclusive) and max (exclusive)
+      function randomNumBetweenMinAndMax(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      function fillPlatformsArray() {
+        let y = PLATFORM_START;
+        while (y > 0) {
+          y -=
+            PLATFORM_HEIGHT +
+            randomNumBetweenMinAndMax(MIN_PLATFORM_SPACE, MAX_PLATFORM_SPACE);
+
+          let x = randomNumBetweenMinAndMax(
+            CANVAS_EDGE_BUFFER,
+            CANVAS.width - CANVAS_EDGE_BUFFER - PLATFORM_WIDTH,
+          );
+          platforms.push({ x, y });
+        }
+      }
+
+      let doodle = {
+        width: 28,
+        height: 28,
+        y: PLATFORM_START - 5,
+      };
+
+      function setDoodleJumperToDefaults() {
+        doodle = {
+          x: CANVAS.width / 2 - 20,
+          y: PLATFORM_START - 40,
+          height: doodle.height,
+          width: doodle.width,
+
+          // velocity
+          dx: 0,
+          dy: 0,
+        };
+      }
+
+      function drawGhostOutline(x, y) {
+        CONTEXT.fillStyle = DOODLE_COLOR;
+        CONTEXT.beginPath();
+        CONTEXT.moveTo(x, y);
+        CONTEXT.lineTo(x, y - 14);
+        CONTEXT.bezierCurveTo(x, y - 22, x + 6, y - 28, x + 14, y - 28);
+        CONTEXT.bezierCurveTo(x + 22, y - 28, x + 28, y - 22, x + 28, y - 14);
+        CONTEXT.lineTo(x + 28, y);
+        CONTEXT.lineTo(x + 23.333, y - 4.666);
+        CONTEXT.lineTo(x + 18.666, y);
+        CONTEXT.lineTo(x + 14, y - 4.666);
+        CONTEXT.lineTo(x + 9.333, y);
+        CONTEXT.lineTo(x + 4.666, y - 4.666);
+        CONTEXT.lineTo(x, y);
+        CONTEXT.fill();
+      }
+
+      function drawEyes(x, y) {
+        CONTEXT.fillStyle = "white";
+        CONTEXT.beginPath();
+        CONTEXT.moveTo(x + 8, y - 20);
+        // left eye
+        CONTEXT.bezierCurveTo(x + 5, y - 20, x + 4, y - 17, x + 4, y - 15);
+        CONTEXT.bezierCurveTo(x + 4, y - 13, x + 5, y - 10, x + 8, y - 10);
+        CONTEXT.bezierCurveTo(x + 11, y - 10, x + 12, y - 13, x + 12, y - 15);
+        CONTEXT.bezierCurveTo(x + 12, y - 17, x + 11, y - 20, x + 8, y - 20);
+        CONTEXT.moveTo(x + 20, y - 20);
+        // right eye
+        CONTEXT.bezierCurveTo(x + 17, y - 20, x + 16, y - 17, x + 16, y - 15);
+        CONTEXT.bezierCurveTo(x + 16, y - 13, x + 17, y - 10, x + 20, y - 10);
+        CONTEXT.bezierCurveTo(x + 23, y - 10, x + 24, y - 13, x + 24, y - 15);
+        CONTEXT.bezierCurveTo(x + 24, y - 17, x + 23, y - 20, x + 20, y - 20);
+        CONTEXT.fill();
+      }
+
+      function drawPupils(x, y) {
+        CONTEXT.fillStyle = DOODLE_COLOR;
+        CONTEXT.beginPath();
+        CONTEXT.arc(x + 18, y - 14, 2, 0, Math.PI * 2, true);
+        CONTEXT.fill();
+
+        CONTEXT.beginPath();
+        CONTEXT.arc(x + 6, y - 14, 2, 0, Math.PI * 2, true);
+        CONTEXT.fill();
+      }
+
+      function drawDoodle() {
+        const startingY = doodle.y + 28;
+        drawGhostOutline(doodle.x, startingY);
+        drawEyes(doodle.x, startingY);
+        drawPupils(doodle.x, startingY);
+      }
+
+      // keep track of player direction and actions
+      let playerDir = 0;
+      let keydown = false;
+      let prevDoodleY = doodle.y - doodle.height;
+      let ANIMATION_FRAME;
+
+      function clearScreen() {
+        CONTEXT.clearRect(0, 0, CANVAS.width, CANVAS.height);
+      }
+
+      function doodleIsFalling() {
+        return doodle.dy > 0;
+      }
+
+      function doodleWasAbovePlatform(platform) {
+        return prevDoodleY + doodle.height <= platform.y;
+      }
+
+      function doodleCollidedWithPlatform(platform) {
+        return (
+          doodle.x < platform.x + PLATFORM_WIDTH &&
+          doodle.x + doodle.width > platform.x &&
+          doodle.y < platform.y + PLATFORM_HEIGHT &&
+          doodle.y + doodle.height > platform.y
+        );
+      }
+
+      function increaseDifficulty() {
+        MIN_PLATFORM_SPACE += 0.5;
+        MAX_PLATFORM_SPACE += 0.5;
+
+        // cap max space
+        MAX_PLATFORM_SPACE = Math.min(MAX_PLATFORM_SPACE, CANVAS.height / 2);
+      }
+
+      function canvasNeedsMorePlatforms() {
+        return doodle.y < CANVAS.height / 2 && doodle.dy < 0;
+      }
+
+      function movePlatformsDown() {
+        platforms.forEach(function (platform) {
+          platform.y -= doodle.dy;
+          if (platform.wasTouchedLast === true) {
+            increaseGameScore();
+          }
+        });
+      }
+
+      function platformsShouldRender() {
+        return platforms[platforms.length - 1].y > 0;
+      }
+
+      function addNewPlatforms() {
+        while (platformsShouldRender()) {
+          platforms.push({
+            x: randomNumBetweenMinAndMax(
+              25,
+              CANVAS.width - 25 - PLATFORM_WIDTH,
+            ),
+            y:
+              platforms[platforms.length - 1].y -
+              (PLATFORM_HEIGHT +
+                randomNumBetweenMinAndMax(
+                  MIN_PLATFORM_SPACE,
+                  MAX_PLATFORM_SPACE,
+                )),
+          });
+
+          increaseDifficulty();
+        }
+      }
+
+      function removeOffScreenPlatforms() {
+        platforms = platforms.filter(function (platform) {
+          return platform.y < CANVAS.height;
+        });
+      }
+
+      function drawScore() {
+        CONTEXT.fillStyle = "white";
+        CONTEXT.textAlign = "center";
+        CONTEXT.font = "14px Arial";
+        CONTEXT.fillText(`${Math.round(GAME_SCORE).toLocaleString()}`, CANVAS.width - 50, 50);
+      }
+
+      function increaseGameScore() {
+        GAME_SCORE -= doodle.dy * .1
+      }
+
+      function loop() {
+        ANIMATION_FRAME = requestAnimationFrame(loop);
+        clearScreen();
+        doodle.dy += GRAVITY;
+
+        if (canvasNeedsMorePlatforms()) {
+          movePlatformsDown();
+          addNewPlatforms();
+          removeOffScreenPlatforms();
+        } else {
+          doodle.y += doodle.dy;
+        }
+
+        // only apply DRAG to horizontal movement if key is not pressed
+        if (!keydown) {
+          if (playerDir < 0) {
+            doodle.dx += DRAG;
+
+            // don't let dx go above 0
+            if (doodle.dx > 0) {
+              doodle.dx = 0;
+              playerDir = 0;
+            }
+          } else if (playerDir > 0) {
+            doodle.dx -= DRAG;
+
+            if (doodle.dx < 0) {
+              doodle.dx = 0;
+              playerDir = 0;
+            }
+          }
+        }
+
+        doodle.x += doodle.dx;
+
+        // make doodle wrap the screen
+        if (doodle.x + doodle.width < 0) {
+          doodle.x = CANVAS.width;
+        } else if (doodle.x > CANVAS.width) {
+          doodle.x = -doodle.width;
+        }
+
+        CONTEXT.fillStyle = PLATFORM_COLOR;
+        platforms.forEach(function (platform) {
+          CONTEXT.fillRect(
+            platform.x,
+            platform.y,
+            PLATFORM_WIDTH,
+            PLATFORM_HEIGHT,
+          );
+
+          if (
+            doodleIsFalling() &&
+            doodleWasAbovePlatform(platform) &&
+            doodleCollidedWithPlatform(platform)
+          ) {
+            platform.wasTouchedLast = true;
+            doodle.y = platform.y - doodle.height;
+            doodle.dy = BOUNCE_VELOCITY;
+          }
+        });
+
+        drawDoodle();
+        drawScore();
+
+        prevDoodleY = doodle.y;
+
+        if (doodle.y > CANVAS.height) {
+          cancelAnimationFrame(ANIMATION_FRAME);
+          DOODLE_IS_OFF_SCREEN = true;
+          showResetScreen();
+        }
+
+        // delayLoop(200)
+      }
+
+      function delayLoop(time) {
+        window.setTimeout(() => {
+            console.log("delay")
+        }, time)
+      }
+
+      let DOODLE_IS_OFF_SCREEN = false;
+
+      function reset() {
+        if (DOODLE_IS_OFF_SCREEN) {
+          clearScreen();
+          resetPlatformsArray();
+          resetMinMaxPlatformSpacing();
+          GAME_SCORE = 0;
+          startGame();
+          DOODLE_IS_OFF_SCREEN = false;
+        }
+      }
+
+      function showResetScreen() {
+        CONTEXT.fillStyle = DOODLE_COLOR;
+        CONTEXT.textAlign = "center";
+        CONTEXT.font = "48px Arial";
+        var centerX = CANVAS.width / 2;
+        CONTEXT.fillText("Whoops", centerX, 50);
+        CONTEXT.font = "24px Arial";
+        CONTEXT.fillText("Press <spacebar> to restart", centerX, 100);
+      }
+
+      document.addEventListener("keydown", function (e) {
+        // 'p' key
+        if (e.which === 80) {
+          cancelAnimationFrame(ANIMATION_FRAME);
+        }
+        // left arrow key
+        if (e.which === 37) {
+          keydown = true;
+          playerDir = -1;
+          doodle.dx = -3;
+        }
+        // right arrow key
+        else if (e.which === 39) {
+          keydown = true;
+          playerDir = 1;
+          doodle.dx = 3;
+        } else if (e.which === 32) {
+          if (DOODLE_IS_OFF_SCREEN) {
+            reset();
+          }
+        }
+      });
+
+      document.addEventListener("keyup", function (e) {
+        keydown = false;
+      });
+
+      function resetPlatformsArray() {
+        START_PLATFORM.y = PLATFORM_START;
+        platforms = [START_PLATFORM];
+      }
+
+      function resetMinMaxPlatformSpacing() {
+        MIN_PLATFORM_SPACE = START_MIN_PLATFORM_SPACE;
+        MAX_PLATFORM_SPACE = START_MAX_PLATFORM_SPACE;
+      }
+
+      function startGame() {
+        setDoodleJumperToDefaults();
+        fillPlatformsArray();
+        requestAnimationFrame(loop);
+      }
+
+      startGame();
+    </script>
+  </body>
+</html>

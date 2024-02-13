@@ -229,11 +229,15 @@
         CONTEXT.fillStyle = "white";
         CONTEXT.textAlign = "center";
         CONTEXT.font = "14px Arial";
-        CONTEXT.fillText(`${Math.round(GAME_SCORE).toLocaleString()}`, CANVAS.width - 50, 50);
+        CONTEXT.fillText(
+          `${Math.round(GAME_SCORE).toLocaleString()}`,
+          CANVAS.width - 50,
+          50,
+        );
       }
 
       function increaseGameScore() {
-        GAME_SCORE -= doodle.dy * .1
+        GAME_SCORE -= doodle.dy * 0.1;
       }
 
       function loop() {
@@ -314,8 +318,8 @@
 
       function delayLoop(time) {
         window.setTimeout(() => {
-            console.log("delay")
-        }, time)
+          console.log("delay");
+        }, time);
       }
 
       let DOODLE_IS_OFF_SCREEN = false;

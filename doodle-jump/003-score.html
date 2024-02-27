@@ -26,6 +26,7 @@
   <body>
     <canvas width="500" height="667" id="game"></canvas>
     <script>
+      let HIGH_SCORE = 0;
       const CANVAS = document.getElementById("game");
       const CONTEXT = CANVAS.getContext("2d");
 
@@ -225,6 +226,18 @@
         });
       }
 
+      function drawHighScore() {
+        CONTEXT.fillStyle = "white";
+        CONTEXT.textAlign = "center";
+        CONTEXT.font = "14px Arial";
+        CONTEXT.fillText(
+          `Highscore: ${Math.round(HIGH_SCORE).toLocaleString()}`,
+          50,
+          50,
+        );
+
+      }
+
       function drawScore() {
         CONTEXT.fillStyle = "white";
         CONTEXT.textAlign = "center";
@@ -238,6 +251,9 @@
 
       function increaseGameScore() {
         GAME_SCORE -= doodle.dy * 0.1;
+        if (GAME_SCORE > HIGH_SCORE) {
+            HIGH_SCORE = GAME_SCORE;
+        }
       }
 
       function loop() {
@@ -303,6 +319,7 @@
         });
 
         drawDoodle();
+        drawHighScore();
         drawScore();
 
         prevDoodleY = doodle.y;

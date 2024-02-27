@@ -232,10 +232,9 @@
         CONTEXT.font = "14px Arial";
         CONTEXT.fillText(
           `Highscore: ${Math.round(HIGH_SCORE).toLocaleString()}`,
-          50,
+          70,
           50,
         );
-
       }
 
       function drawScore() {
@@ -252,7 +251,7 @@
       function increaseGameScore() {
         GAME_SCORE -= doodle.dy * 0.1;
         if (GAME_SCORE > HIGH_SCORE) {
-            HIGH_SCORE = GAME_SCORE;
+          HIGH_SCORE = GAME_SCORE;
         }
       }
 

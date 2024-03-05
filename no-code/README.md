@@ -11,9 +11,16 @@ Play a game of Dots and Boxes.
  etc
 ```
 
+The students will write on piece of paper the commands they want executed and deliver these to the teacher. This is done asynchronously. All commands are executed in the order they are recieved.
 
-1. The teacher acts as the computer and will interpret commands from each team. The teacher knows the following commands
-    1. teacher.moveTo(x, y)
-    1. teacher.lineTo(distance, isX)
-    1. teacher.changeColor(markerColor)
-    1. teacher.writeText(text)
+The teacher acts as the computer and will interpret commands from each team. The teacher knows the following commands
+1. teacher.moveTo(x, y)
+1. teacher.lineTo(distance, isX)
+1. teacher.changeColor(markerColor)
+1. teacher.writeText(text)
+
+The teacher should reject any malformed commands.
+
+```
+teacher.CHANGE_COLOR("test") // This would fail and the teacher should report an error back to the students.
+```

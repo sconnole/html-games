@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Still Frame Platformer</title>
+    <meta charset="UTF-8" />
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        background-color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      canvas {
+        background-color: #242038;
+        border: 2px solid #d6edff;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas width="500" height="667" id="game"></canvas>
+    <script>
+      const CANVAS = document.getElementById("game");
+      const CONTEXT = CANVAS.getContext("2d");
+      const LEVELS = [
+        {
+          name: "Level 1",
+          finish: {
+            x: CANVAS.width - 10,
+            y: CANVAS.height - 10,
+          },
+          platforms: [{ x: 10, y: 10 }],
+          start: {
+            x: 100,
+            y: 100,
+          },
+        },
+        {
+          name: "Level 2",
+        },
+      ];
+
+    function runGame() {
+
+    }
+    </script>
+  </body>
+</html>

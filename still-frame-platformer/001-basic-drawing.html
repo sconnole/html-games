@@ -24,7 +24,7 @@
     </style>
   </head>
   <body>
-    <canvas width="500" height="667" id="game"></canvas>
+    <canvas width="900" height="600" id="game"></canvas>
     <script>
       const CANVAS = document.getElementById("game");
       const CONTEXT = CANVAS.getContext("2d");
@@ -60,29 +60,81 @@
         y: CANVAS.height,
         x: 10,
         direction: {
-            x: 0,
-            y: 0,
-        }
+          x: 0,
+          y: 0,
+        },
       };
 
       function drawPlayer(level) {
-         CONTEXT.fillStyle = "white"; // TODO pick a color
-         CONTEXT.fillRect(level.start.x, level.start.y, player.width, player.height)
+        CONTEXT.fillStyle = "white"; // TODO pick a color
+        CONTEXT.fillRect(
+          level.start.x,
+          level.start.y,
+          player.width,
+          player.height,
+        );
       }
 
       function drawFinishPoint(level) {
-        CONTEXT.fillStyle = "#c3c3c3";
-        CONTEXT.fillRect(level.finish.x, level.finish.y, level.finish.width,level.finish.height)
+        drawDoorFrame(level.finish);
+        const frameWidth = 2;
+        drawDoorPanels(level.finish, frameWidth);
+        drawDoorknobs(level.finish, frameWidth);
+      }
+
+      function drawDoorFrame(finish) {
+        CONTEXT.fillStyle = "#48483A";
+        CONTEXT.fillRect(
+          finish.x,
+          finish.y - finish.height,
+          finish.width,
+          finish.height,
+        );
+      }
+
+      function drawDoorPanels(finish, frameWidth) {
+        CONTEXT.fillStyle = "#5C574F";
+        drawDoorPanel(finish, frameWidth, 0);
+        drawDoorPanel(finish, frameWidth, finish.width / 2)
+      }
+
+      function drawDoorPanel(finish, frameWidth, xOffset) {
+         CONTEXT.fillRect(
+          finish.x + frameWidth + xOffset,
+          finish.y - finish.height + frameWidth,
+          finish.width / 2 - frameWidth * 2,
+          finish.height - frameWidth * 2,
+        );
+      }
+
+      function drawDoorknobs(finish, frameWidth) {
+        CONTEXT.beginPath();
+        drawDoorknob(finish, -frameWidth - 5);
+        drawDoorknob(finish, frameWidth + 5);
+        CONTEXT.fillStyle = "#A28F9D"; // Gold
+        CONTEXT.fill();
+        CONTEXT.closePath();
+      }
+
+      function drawDoorknob(finish, offset) {
+        CONTEXT.arc(
+          finish.x + finish.width / 2 + offset,
+          finish.y - finish.height / 2,
+          3,
+          0,
+          Math.PI * 2,
+          true,
+        );
       }
 
       function drawLevel(level) {
         drawLevelName(level.name);
-          // drawMap()
+        // drawMap()
         drawPlayer(level);
         drawFinishPoint(level);
       }
 
-      drawLevel(LEVELS[0])
+      drawLevel(LEVELS[0]);
 
       // function loop() {
       //    requestAnimationFrame(loop);

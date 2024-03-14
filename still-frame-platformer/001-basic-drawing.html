@@ -55,24 +55,50 @@
       }
 
       let player = {
-        width: 30,
-        height: 30,
-        y: CANVAS.height,
-        x: 10,
+        width: 10,
+        height: 20,
+        y: CANVAS.height - 50,
+        x: 50,
         direction: {
           x: 0,
           y: 0,
         },
       };
 
-      function drawPlayer(level) {
-        CONTEXT.fillStyle = "white"; // TODO pick a color
-        CONTEXT.fillRect(
-          level.start.x,
-          level.start.y,
-          player.width,
-          player.height,
-        );
+      function drawPlayer() {
+        const headHeight = player.height / 9;
+        CONTEXT.beginPath();
+        CONTEXT.arc(player.x, player.y, headHeight * 2, 0, Math.PI * 2, true);
+        CONTEXT.strokeStyle = "#DFF8EB";
+        CONTEXT.stroke();
+        CONTEXT.closePath();
+
+        // Body
+        CONTEXT.beginPath();
+        const bottomOfHead = player.y + headHeight + 2;
+        CONTEXT.moveTo(player.x, bottomOfHead);
+        CONTEXT.lineTo(player.x, bottomOfHead + player.height - headHeight);
+        CONTEXT.stroke();
+        CONTEXT.closePath();
+
+        // Arms
+        const limbLength = player.height / 3;
+        const armStartLocation = player.y + player.height / 3;
+        drawLimbs(limbLength, armStartLocation);
+
+        // Legs
+        const legStartLocation = player.y + player.height;
+        drawLimbs(limbLength, legStartLocation);
+      }
+
+      function drawLimbs(length, startLocation) {
+        CONTEXT.beginPath();
+        CONTEXT.moveTo(player.x, startLocation);
+        CONTEXT.lineTo(player.x + length, startLocation + length);
+        CONTEXT.moveTo(player.x, startLocation);
+        CONTEXT.lineTo(player.x - length, startLocation + length);
+        CONTEXT.stroke();
+        CONTEXT.closePath();
       }
 
       function drawFinishPoint(level) {
@@ -95,11 +121,11 @@
       function drawDoorPanels(finish, frameWidth) {
         CONTEXT.fillStyle = "#5C574F";
         drawDoorPanel(finish, frameWidth, 0);
-        drawDoorPanel(finish, frameWidth, finish.width / 2)
+        drawDoorPanel(finish, frameWidth, finish.width / 2);
       }
 
       function drawDoorPanel(finish, frameWidth, xOffset) {
-         CONTEXT.fillRect(
+        CONTEXT.fillRect(
           finish.x + frameWidth + xOffset,
           finish.y - finish.height + frameWidth,
           finish.width / 2 - frameWidth * 2,
@@ -130,7 +156,7 @@
       function drawLevel(level) {
         drawLevelName(level.name);
         // drawMap()
-        drawPlayer(level);
+        drawPlayer(level.start);
         drawFinishPoint(level);
       }
 
@@ -140,11 +166,12 @@
       //    requestAnimationFrame(loop);
       //    drawLevelName("Level 1");
       // }
-      //
+
       // function startGame() {
-      //   requestAnimationFrame(loop);
+      //   // set Player X and Y  to level start X and Y
+      //  requestAnimationFrame(loop);
       // }
-      //
+
       // startGame();
     </script>
   </body>

@@ -26,18 +26,19 @@
   <body>
     <canvas width="900" height="600" id="game"></canvas>
     <script>
+      const DEFAULT_PLATFORM_COLOR = "#9E768F";
+      const DEFAULT_OFFSET = 50;
       const CANVAS = document.getElementById("game");
       const CONTEXT = CANVAS.getContext("2d");
       const LEVELS = [
         {
           name: "Level 1",
           finish: {
-            x: CANVAS.width - 50,
-            y: CANVAS.height - 50,
+            x: CANVAS.width - DEFAULT_OFFSET,
+            y: CANVAS.height - DEFAULT_OFFSET,
             width: 45,
             height: 45,
           },
-          platforms: [{ x: 10, y: 10 }],
           start: {
             x: 100,
             y: 100,
@@ -45,8 +46,21 @@
         },
         {
           name: "Level 2",
+          map: {
+            platforms: [],
+          },
         },
       ];
+      const DEFAULT_MAP = {
+        platforms: [
+          {
+            x: 0,
+            y: CANVAS.height - DEFAULT_OFFSET,
+            width: CANVAS.width,
+            height: DEFAULT_OFFSET,
+          },
+        ],
+      };
 
       function drawLevelName(level, x = CANVAS.width - 75, y = 30) {
         CONTEXT.fillStyle = "white";
@@ -57,7 +71,7 @@
       let player = {
         width: 10,
         height: 30,
-        y: CANVAS.height - 50,
+        y: CANVAS.height - DEFAULT_OFFSET,
         x: 50,
         direction: {
           x: 0,
@@ -67,19 +81,26 @@
 
       function drawPlayer() {
         const headHeight = player.height / 12;
-        const radius = headHeight * 2;
+        const diameter = headHeight * 2;
         const headStartLocation = player.y - player.height;
         CONTEXT.beginPath();
-        CONTEXT.arc(player.x, headStartLocation, radius, 0, Math.PI * 2, true);
+        CONTEXT.arc(
+          player.x,
+          headStartLocation,
+          diameter,
+          0,
+          Math.PI * 2,
+          true,
+        );
         CONTEXT.strokeStyle = "#DFF8EB";
         CONTEXT.stroke();
         CONTEXT.closePath();
 
         // Body
         CONTEXT.beginPath();
-        const bottomOfHead = headStartLocation + radius;
+        const bottomOfHead = headStartLocation + diameter;
         const limbLength = player.height / 4;
-        const bodyEndLocation = player.y - limbLength - radius ;
+        const bodyEndLocation = player.y - limbLength - diameter;
         CONTEXT.moveTo(player.x, bottomOfHead);
         CONTEXT.lineTo(player.x, bodyEndLocation);
         CONTEXT.stroke();
@@ -98,6 +119,21 @@
         CONTEXT.lineTo(player.x - length, startLocation + length);
         CONTEXT.stroke();
         CONTEXT.closePath();
+      }
+
+      function drawMap(map) {
+        map = map ?? DEFAULT_MAP;
+        map.platforms.forEach(drawPlatform);
+      }
+
+      function drawPlatform(platform) {
+        CONTEXT.fillStyle = platform.color ?? DEFAULT_PLATFORM_COLOR;
+        CONTEXT.fillRect(
+          platform.x,
+          platform.y,
+          platform.width,
+          platform.height,
+        );
       }
 
       function drawFinishPoint(level) {
@@ -154,7 +190,7 @@
 
       function drawLevel(level) {
         drawLevelName(level.name);
-        // drawMap()
+        drawMap(level.map);
         drawPlayer(level.start);
         drawFinishPoint(level);
       }

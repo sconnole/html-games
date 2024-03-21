@@ -61,12 +61,9 @@
           },
         ],
       };
-
-      function drawLevelName(level, x = CANVAS.width - 75, y = 30) {
-        CONTEXT.fillStyle = "white";
-        CONTEXT.font = "14px Arial";
-        CONTEXT.fillText(level, x, y);
-      }
+      let KEY_DOWN = false;
+      let BOUNCE_HEIGHT = -40;
+      const GRAVITY = -0.33;
 
       let player = {
         width: 10,
@@ -78,6 +75,12 @@
           y: 0,
         },
       };
+
+      function drawLevelName(level, x = CANVAS.width - 75, y = 30) {
+        CONTEXT.fillStyle = "white";
+        CONTEXT.font = "14px Arial";
+        CONTEXT.fillText(level, x, y);
+      }
 
       function drawPlayer() {
         const headHeight = player.height / 12;
@@ -197,15 +200,27 @@
 
       drawLevel(LEVELS[0]);
 
-      document.addEventListener("keydown", function (e) {
-        console.log(e.which);
+      function moveLeft() {
+        player.direction.x = "left";
+      }
 
+      function moveRight() {
+        player.direction.x = "right";
+      }
+
+      function jump() {
+        player.direction.y = BOUNCE_HEIGHT;
+      }
+
+      document.addEventListener("keydown", function (e) {
         if (e.which === 37) {
-          // moveLeft();
+          KEY_DOWN = true;
+          moveLeft();
         } else if (e.which === 39) {
-          // moveRight();
+          KEY_DOWN = true;
+          moveRight();
         } else if (e.which === 38) {
-          // jump();
+          jump();
         }
 
         // Allow for user to input a specific level
@@ -214,12 +229,14 @@
       });
 
       document.addEventListener("keyup", function (e) {
-        console.log("Key is up");
+        if (e.which === 37 || e.which === 39) {
+          player.direction.x = 0;
+        }
+        KEY_DOWN = false;
       });
 
       // function loop() {
       //    requestAnimationFrame(loop);
-      //    drawLevelName("Level 1");
       // }
 
       // function startGame() {

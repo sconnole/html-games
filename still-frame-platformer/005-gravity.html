@@ -38,7 +38,7 @@
             width: CANVAS.width,
             height: DEFAULT_OFFSET,
           },
-          { x: 20, y: 300, width: 400, height: 20}
+          { x: 20, y: 300, width: 400, height: 20 },
         ],
       };
       const LEVELS = [
@@ -65,7 +65,9 @@
       ];
       let KEY_DOWN = false;
       let BOUNCE_HEIGHT = -40;
-      const GRAVITY = 1;
+      const GRAVITY = .25;
+      const MAX_FALLING_SPEED = 8;
+      let FALLING_SPEED = 1;
       const PLAYER_SPEED = 3;
       let ANIMATION_FRAME_ID;
 
@@ -270,8 +272,14 @@
       }
 
       function applyGravity(platforms) {
-        if (!playerIsOnPlatform(platforms)) {
-          player.y += GRAVITY;
+        if (playerIsOnPlatform(platforms)) {
+          FALLING_SPEED = GRAVITY;
+        } else {
+          player.y += FALLING_SPEED;
+          FALLING_SPEED += GRAVITY;
+          if (FALLING_SPEED >= MAX_FALLING_SPEED) {
+            FALLING_SPEED = MAX_FALLING_SPEED;
+          }
         }
 
         if (player.y >= CANVAS.height + player.height) {

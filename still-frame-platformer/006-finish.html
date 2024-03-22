@@ -1,0 +1,345 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Still Frame Platformer</title>
+    <meta charset="UTF-8" />
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        background-color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      canvas {
+        background-color: #242038;
+        border: 2px solid #d6edff;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas width="900" height="600" id="game"></canvas>
+    <script>
+      const DEFAULT_PLATFORM_COLOR = "#9E768F";
+      const DEFAULT_OFFSET = 50;
+      const CANVAS = document.getElementById("game");
+      const CONTEXT = CANVAS.getContext("2d");
+      const DEFAULT_MAP = {
+        platforms: [
+          {
+            x: 0,
+            y: CANVAS.height - DEFAULT_OFFSET,
+            width: CANVAS.width,
+            height: DEFAULT_OFFSET,
+          },
+          { x: 20, y: 300, width: 400, height: 20 },
+        ],
+      };
+      const LEVELS = [
+        {
+          name: "Level 1",
+          finish: {
+            x: CANVAS.width - DEFAULT_OFFSET,
+            y: CANVAS.height - DEFAULT_OFFSET,
+            width: 45,
+            height: 45,
+          },
+          start: {
+            x: 100,
+            y: 100,
+          },
+          map: DEFAULT_MAP,
+        },
+        {
+          name: "Level 2",
+          map: {
+            platforms: [],
+          },
+        },
+      ];
+      let KEY_DOWN = false;
+      let BOUNCE_HEIGHT = -40;
+      const GRAVITY = 0.25;
+      const MAX_FALLING_SPEED = 8;
+      let FALLING_SPEED = 1;
+      const PLAYER_SPEED = 3;
+      let ANIMATION_FRAME_ID;
+      let GAME_CAN_END;
+
+      let player = {
+        width: 10,
+        height: 30,
+        y: CANVAS.height - DEFAULT_OFFSET,
+        x: 50,
+        direction: {
+          x: 0,
+          y: 0,
+        },
+      };
+
+      function drawLevelName(level, x = CANVAS.width - 75, y = 30) {
+        CONTEXT.fillStyle = "white";
+        CONTEXT.font = "14px Arial";
+        CONTEXT.fillText(level, x, y);
+      }
+
+      function drawPlayer() {
+        const headHeight = player.height / 12;
+        const diameter = headHeight * 2;
+        const headStartLocation = player.y - player.height;
+        CONTEXT.beginPath();
+        CONTEXT.arc(
+          player.x,
+          headStartLocation,
+          diameter,
+          0,
+          Math.PI * 2,
+          true,
+        );
+        CONTEXT.strokeStyle = "#DFF8EB";
+        CONTEXT.stroke();
+        CONTEXT.closePath();
+
+        // Body
+        CONTEXT.beginPath();
+        const bottomOfHead = headStartLocation + diameter;
+        const limbLength = player.height / 4;
+        const bodyEndLocation = player.y - limbLength - diameter;
+        CONTEXT.moveTo(player.x, bottomOfHead);
+        CONTEXT.lineTo(player.x, bodyEndLocation);
+        CONTEXT.stroke();
+        CONTEXT.closePath();
+
+        const armStartLocation = bottomOfHead + player.height / 8;
+        drawLimbs(limbLength, armStartLocation);
+        drawLimbs(limbLength, bodyEndLocation);
+      }
+
+      function drawLimbs(length, startLocation) {
+        CONTEXT.beginPath();
+        CONTEXT.moveTo(player.x, startLocation);
+        CONTEXT.lineTo(player.x + length, startLocation + length);
+        CONTEXT.moveTo(player.x, startLocation);
+        CONTEXT.lineTo(player.x - length, startLocation + length);
+        CONTEXT.stroke();
+        CONTEXT.closePath();
+      }
+
+      function drawMap(map) {
+        map = map ?? DEFAULT_MAP;
+        map.platforms.forEach(drawPlatform);
+      }
+
+      function drawPlatform(platform) {
+        CONTEXT.fillStyle = platform.color ?? DEFAULT_PLATFORM_COLOR;
+        CONTEXT.fillRect(
+          platform.x,
+          platform.y,
+          platform.width,
+          platform.height,
+        );
+      }
+
+      function drawFinishPoint(level) {
+        drawDoorFrame(level.finish);
+        const frameWidth = 2;
+        drawDoorPanels(level.finish, frameWidth);
+        drawDoorknobs(level.finish, frameWidth);
+      }
+
+      function drawDoorFrame(finish) {
+        CONTEXT.fillStyle = "#48483A";
+        CONTEXT.fillRect(
+          finish.x,
+          finish.y - finish.height,
+          finish.width,
+          finish.height,
+        );
+      }
+
+      function drawDoorPanels(finish, frameWidth) {
+        CONTEXT.fillStyle = "#5C574F";
+        drawDoorPanel(finish, frameWidth, 0);
+        drawDoorPanel(finish, frameWidth, finish.width / 2);
+      }
+
+      function drawDoorPanel(finish, frameWidth, xOffset) {
+        CONTEXT.fillRect(
+          finish.x + frameWidth + xOffset,
+          finish.y - finish.height + frameWidth,
+          finish.width / 2 - frameWidth * 2,
+          finish.height - frameWidth * 2,
+        );
+      }
+
+      function drawDoorknobs(finish, frameWidth) {
+        CONTEXT.beginPath();
+        drawDoorknob(finish, -frameWidth - 5);
+        drawDoorknob(finish, frameWidth + 5);
+        CONTEXT.fillStyle = "#A28F9D"; // Gold
+        CONTEXT.fill();
+        CONTEXT.closePath();
+      }
+
+      function drawDoorknob(finish, offset) {
+        CONTEXT.arc(
+          finish.x + finish.width / 2 + offset,
+          finish.y - finish.height / 2,
+          3,
+          0,
+          Math.PI * 2,
+          true,
+        );
+      }
+
+      function drawLevel(level) {
+        drawFinishPoint(level);
+        drawLevelName(level.name);
+        drawMap(level.map);
+        drawPlayer(level.start);
+      }
+
+      function moveLeft() {
+        player.direction.x = "left";
+      }
+
+      function moveRight() {
+        player.direction.x = "right";
+      }
+
+      function jump() {
+        player.direction.y = BOUNCE_HEIGHT;
+      }
+
+      document.addEventListener("keydown", function (e) {
+        if (e.which === 37) {
+          KEY_DOWN = true;
+          moveLeft();
+        } else if (e.which === 39) {
+          KEY_DOWN = true;
+          moveRight();
+        } else if (e.which === 38) {
+          jump();
+        } else if (e.which === 32) { // spacebar
+          if(GAME_CAN_END) {
+            endGame();
+          }
+        }
+
+        // Allow for user to input a specific level
+        // Add options for user
+        // Reset level when they press "r"
+      });
+
+      document.addEventListener("keyup", function (e) {
+        if (e.which === 37 || e.which === 39) {
+          player.direction.x = 0;
+        }
+        KEY_DOWN = false;
+      });
+
+      let currentLevelIndex = 0;
+      function getLevel() {
+        return LEVELS[currentLevelIndex];
+      }
+
+      function movePlayer() {
+        if (player.x <= 0) {
+          player.x = CANVAS.width;
+        } else if (player.x >= CANVAS.width) {
+          player.x = 0;
+        }
+
+        if (player.direction.x === "left") {
+          player.x -= PLAYER_SPEED;
+        } else if (player.direction.x === "right") {
+          player.x += PLAYER_SPEED;
+        }
+      }
+
+      function isOnPlatform(platform) {
+        return (
+          itemsOverlapX(player, platform) && itemsOverlapY(player, platform)
+        );
+      }
+
+      function itemsOverlapX(item1, item2) {
+        return (
+          item1.x < item2.x + item2.width && item1.x + item1.width > item2.x
+        );
+      }
+
+      function itemsOverlapY(item1, item2) {
+        return item1.y < item2.y + item2.height && item1.y > item2.y;
+      }
+
+      function playerIsOnPlatform(platforms) {
+        return platforms.some(isOnPlatform);
+      }
+
+      function applyGravity(platforms) {
+        if (playerIsOnPlatform(platforms)) {
+          FALLING_SPEED = GRAVITY;
+        } else {
+          player.y += FALLING_SPEED;
+          FALLING_SPEED += GRAVITY;
+          if (FALLING_SPEED >= MAX_FALLING_SPEED) {
+            FALLING_SPEED = MAX_FALLING_SPEED;
+          }
+        }
+
+        if (player.y >= CANVAS.height + player.height) {
+          endGame();
+        }
+      }
+
+      function isPlayerAtFinish(level) {
+        return (
+          itemsOverlapX(player, level.finish) &&
+          itemsOverlapY(player, level.finish)
+        );
+      }
+
+      function endGame() {
+        cancelAnimationFrame(ANIMATION_FRAME_ID);
+      }
+
+      function loop() {
+        ANIMATION_FRAME_ID = requestAnimationFrame(loop);
+        clearScreen();
+        let level = getLevel();
+        movePlayer();
+        applyGravity(level.map.platforms);
+        drawLevel(level);
+        if (isPlayerAtFinish(level)) {
+          GAME_CAN_END = true;
+        } else {
+          GAME_CAN_END = false;
+        }
+      }
+
+      function setPlayerInfoByLevel(level) {
+        player.x = level.start.x;
+        player.y = level.start.y;
+      }
+
+      function clearScreen() {
+        CONTEXT.clearRect(0, 0, CANVAS.width, CANVAS.height);
+      }
+
+      function startGame() {
+        let level = getLevel();
+        setPlayerInfoByLevel(level);
+        requestAnimationFrame(loop);
+      }
+
+      startGame();
+    </script>
+  </body>
+</html>

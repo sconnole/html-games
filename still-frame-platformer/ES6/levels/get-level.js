@@ -1,4 +1,5 @@
 "use strict";
+
 import { LEVELS } from "./index.js";
 
 let CURRENT_LEVEL_INDEX = 0;

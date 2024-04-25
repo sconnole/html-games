@@ -23,7 +23,7 @@ function drawDoorFrame(finish) {
 }
 
 function drawDoorPanels(finish, frameWidth) {
-    context.fillStyle = DARK_BROWN;
+  context.fillStyle = DARK_BROWN;
   drawDoorPanel(finish, frameWidth, 0);
   drawDoorPanel(finish, frameWidth, finish.width / 2);
 }
@@ -41,7 +41,7 @@ function drawDoorknobs(finish, frameWidth) {
   context.beginPath();
   drawDoorknob(finish, -frameWidth - 5);
   drawDoorknob(finish, frameWidth + 5);
-    context.fillStyle = SOFT_PINK;
+  context.fillStyle = SOFT_PINK;
   context.fill();
   context.closePath();
 }

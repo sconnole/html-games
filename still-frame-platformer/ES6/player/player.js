@@ -1,4 +1,4 @@
-let PLAYER = {
+const DEFAULT_PLAYER = {
   width: 10,
   height: 30,
   y: 0,
@@ -7,6 +7,10 @@ let PLAYER = {
     x: 0,
     y: 0,
   },
+  speed: 3,
+  isAtEnd: false,
 };
 
-export { PLAYER };
+let PLAYER = DEFAULT_PLAYER;
+
+export { PLAYER, DEFAULT_PLAYER };

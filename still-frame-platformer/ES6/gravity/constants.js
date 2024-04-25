@@ -1,0 +1,7 @@
+"use strict";
+
+const GRAVITY = 0.25;
+const MAX_FALLING_SPEED = 8;
+const BOUNCE_VELOCITY = -8;
+
+export { GRAVITY, MAX_FALLING_SPEED, BOUNCE_VELOCITY };

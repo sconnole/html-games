@@ -3,6 +3,7 @@
 import { getLevel } from "../levels/index.js";
 import { clearScreen, drawLevel } from "../canvas/index.js";
 import movePlayer from "./move-player.js";
+import {applyGravity} from "../gravity/index.js";
 
 let ANIMATION_FRAME_ID;
 
@@ -11,7 +12,7 @@ function runGame() {
   clearScreen();
   let level = getLevel();
   movePlayer();
-  // applyGravity(level.map.platforms);
+  applyGravity(level.map.platforms);
   drawLevel(level);
   // if (isPlayerAtFinish(level)) {
   //   GAME_CAN_END = true;

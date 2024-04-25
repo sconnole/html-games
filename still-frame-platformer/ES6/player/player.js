@@ -8,6 +8,7 @@ const DEFAULT_PLAYER = {
     y: 0,
   },
   speed: 3,
+  fallingSpeed: 1,
   isAtEnd: false,
 };
 

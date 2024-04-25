@@ -9,7 +9,7 @@ export default {
   name: "Spacebar will help you",
   finish: {
     x: canvas.width - 45,
-    y: canvas.height - 45,
+    y: canvas.height - 20,
     width: 45,
     height: 45,
   },

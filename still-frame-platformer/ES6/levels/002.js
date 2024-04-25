@@ -10,13 +10,13 @@ export default {
     platforms: [],
   },
   start: {
-    x: 10,
-    y: 0,
+    x: 25,
+    y: 50,
   },
   finish: {
     x: 10,
     y: canvas.height - 10,
-    width: 200,
+    width: 135,
     height: 45,
   },
 };

@@ -1,6 +1,6 @@
 "use strict";
 
-import playerIsOnPlatform from "./is-on-platform.js";
+import playerIsOnPlatform from "./player-is-on-platform.js";
 import playerIsMovingDown from "./player-is-moving-down.js";
 import { GRAVITY, MAX_FALLING_SPEED } from "./constants.js";
 import { PLAYER } from "../player/index.js";
@@ -19,6 +19,6 @@ export default function (platforms) {
 
   const canvas = document.getElementById(CANVAS_ID);
   if (PLAYER.y >= canvas.height + PLAYER.height) {
-    endGame({ completed: false });
+    // endGame({ completed: false });
   }
 }

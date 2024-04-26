@@ -3,7 +3,7 @@
 import { getLevel } from "../levels/index.js";
 import { clearScreen, drawLevel } from "../canvas/index.js";
 import movePlayer from "./move-player.js";
-import {applyGravity} from "../gravity/index.js";
+import { applyGravity } from "../gravity/index.js";
 
 let ANIMATION_FRAME_ID;
 

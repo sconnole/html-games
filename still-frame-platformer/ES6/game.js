@@ -4,10 +4,10 @@ import {
   setPlayerInfoByLevel,
   moveLeft,
   moveRight,
-    jump,
-    PLAYER,
+  jump,
+  PLAYER,
 } from "./player/index.js";
-import { runGame } from "./animation/index.js";
+import { runGame, endGame } from "./animation/index.js";
 import { getLevel } from "./levels/index.js";
 
 function startGame() {
@@ -25,7 +25,7 @@ function setupEvents() {
     } else if (e.key === "ArrowUp") {
       jump();
     } else if (e.key === " ") {
-      if (GAME_CAN_END) {
+      if (PLAYER.isAtFinish) {
         endGame({ completed: true });
       }
     } else if (e.key === "r") {

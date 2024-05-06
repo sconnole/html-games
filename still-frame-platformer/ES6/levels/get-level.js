@@ -1,8 +1,6 @@
 "use strict";
 
-import { LEVELS } from "./index.js";
-
-let CURRENT_LEVEL_INDEX = 0;
+import { LEVELS, CURRENT_LEVEL_INDEX } from "./index.js";
 
 export default function getLevel(index) {
   index = index || CURRENT_LEVEL_INDEX;

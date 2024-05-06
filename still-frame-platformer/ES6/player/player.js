@@ -9,7 +9,7 @@ const DEFAULT_PLAYER = {
   },
   speed: 3,
   fallingSpeed: 1,
-  isAtEnd: false,
+  isAtFinish: false,
 };
 
 let PLAYER = DEFAULT_PLAYER;

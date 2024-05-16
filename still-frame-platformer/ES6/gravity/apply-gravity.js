@@ -5,6 +5,7 @@ import playerIsMovingDown from "./player-is-moving-down.js";
 import { GRAVITY, MAX_FALLING_SPEED } from "./constants.js";
 import { PLAYER } from "../player/index.js";
 import { CANVAS_ID } from "../canvas/index.js";
+import { endGame } from "../animation/index.js";
 
 export default function (platforms) {
   if (playerIsOnPlatform(platforms) && playerIsMovingDown()) {
@@ -19,6 +20,6 @@ export default function (platforms) {
 
   const canvas = document.getElementById(CANVAS_ID);
   if (PLAYER.y >= canvas.height + PLAYER.height) {
-    // endGame({ completed: false });
+    endGame({ completed: false });
   }
 }
